@@ -1,7 +1,7 @@
-package com.lifegroups.sistema.controller;
+package com.lifegroups.aplicativo.controller;
 
-import com.lifegroups.sistema.model.Pessoa;
-import com.lifegroups.sistema.repository.PessoaRepository;
+import com.lifegroups.aplicativo.model.Pessoa;
+import com.lifegroups.aplicativo.repository.PessoaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

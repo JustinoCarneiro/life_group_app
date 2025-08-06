@@ -1,4 +1,4 @@
-package com.lifegroups.sistema.model;
+package com.lifegroups.aplicativo.model;
 
 import jakarta.persistence.*;
 import java.util.UUID;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Table(name = "lifegroups")
 @Getter
 @Setter
-public class Lifegroup {
+public class LifeGroup {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

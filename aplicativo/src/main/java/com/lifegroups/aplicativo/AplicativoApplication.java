@@ -1,13 +1,14 @@
-package com.lifegroups.sistema;
+package com.lifegroups.aplicativo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-public class SistemaApplication {
+@ComponentScan(basePackages = "com.lifegroups.aplicativo")
+public class AplicativoApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SistemaApplication.class, args);
+        SpringApplication.run(AplicativoApplication.class, args);
     }
-
 }

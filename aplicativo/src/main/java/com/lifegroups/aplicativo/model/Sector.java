@@ -1,4 +1,4 @@
-package com.lifegroups.sistema.model;
+package com.lifegroups.aplicativo.model;
 
 import jakarta.persistence.*;
 import java.util.UUID;

@@ -1,6 +1,6 @@
-package com.lifegroups.sistema.repository;
+package com.lifegroups.aplicativo.repository;
 
-import com.lifegroups.sistema.model.Area;
+import com.lifegroups.aplicativo.model.Area;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.UUID;

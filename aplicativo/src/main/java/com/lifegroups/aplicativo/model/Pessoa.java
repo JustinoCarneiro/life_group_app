@@ -1,4 +1,4 @@
-package com.lifegroups.sistema.model;
+package com.lifegroups.aplicativo.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
@@ -25,7 +25,7 @@ public class Pessoa {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lifegroup_id")
-    private Lifegroup lifegroup;
+    private LifeGroup lifegroup;
 
     private boolean is_leader;
     private boolean is_assistant;
