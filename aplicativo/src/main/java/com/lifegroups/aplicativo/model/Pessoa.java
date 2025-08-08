@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode; // 1. Adicione este import
+import org.hibernate.type.SqlTypes;           // 2. Adicione este import
 
 @Entity
 @Table(name = "people")
@@ -33,9 +35,9 @@ public class Pessoa {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "discipler_id")
     private Pessoa discipler;
-
-    // O campo 'steps' (JSONB) pode ser mapeado como uma String
-    // ou com uma biblioteca de conversão de JSON se precisar de manipulação complexa.
+    
+    // 3. Adicione esta anotação para mapear para o tipo JSONB
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String steps;
 }

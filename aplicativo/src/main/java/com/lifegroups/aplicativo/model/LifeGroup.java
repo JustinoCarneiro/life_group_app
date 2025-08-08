@@ -1,9 +1,10 @@
 package com.lifegroups.aplicativo.model;
 
 import jakarta.persistence.*;
-import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
+import java.util.List; // Adicione este import
+import java.util.UUID;
 
 @Entity
 @Table(name = "lifegroups")
@@ -21,4 +22,7 @@ public class LifeGroup {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sector_id", nullable = false)
     private Sector sector;
+
+    @OneToMany(mappedBy = "lifegroup", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Pessoa> people;
 }
