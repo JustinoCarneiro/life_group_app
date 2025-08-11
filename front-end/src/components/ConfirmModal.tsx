@@ -10,7 +10,6 @@ interface ConfirmModalProps {
 }
 
 const ConfirmModal: React.FC<ConfirmModalProps> = ({ visivel, titulo, mensagem, aoCancelar, aoConfirmar }) => {
-    // ... (o conteúdo do componente permanece o mesmo, apenas as props foram traduzidas)
     return (
         <Modal
             animationType="fade"

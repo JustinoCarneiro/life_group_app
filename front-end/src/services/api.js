@@ -82,13 +82,18 @@ export const buscarPessoasPorLifeGroup = async (idLifeGroup) => {
 };
 
 export const criarPessoa = async (dadosPessoa) => {
+    console.log("Dados recebidos em api.js para criar pessoa:", JSON.stringify(dadosPessoa, null, 2));
+
     const resposta = await fetch(`${API_URL}/api/pessoas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // Enviamos 'name' e 'lifegroupId', como esperado pelo DTO
-        body: JSON.stringify({ name: dadosPessoa.name, lifegroupId: dadosPessoa.lifegroupId }),
+        body: JSON.stringify(dadosPessoa),
     });
-    if (!resposta.ok) throw new Error('Falha ao criar pessoa');
+
+    if (!resposta.ok) {
+        console.error("API retornou um erro:", resposta.status, await resposta.text());
+        throw new Error('Falha ao criar pessoa');
+    }
     return resposta.json();
 };
 

@@ -1,12 +1,4 @@
-package com.lifegroups.aplicativo.dto.setor; // <-- CAMINHO ATUALIZADO
-
+package com.lifegroups.aplicativo.dto.setor;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.UUID;
-
-public record SetorCriarDTO(
-    @JsonProperty("name")
-    String nome,
-    
-    @JsonProperty("areaId")
-    UUID areaId
-) {}
+public record SetorCriarDTO(@JsonProperty("name") String nome, @JsonProperty("areaId") UUID areaId) {}

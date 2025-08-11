@@ -11,7 +11,7 @@ const TelaAreas = () => {
     const [novoNomeArea, setNovoNomeArea] = useState('');
 
     const [modalDeletarVisivel, setModalDeletarVisivel] = useState(false);
-    const [areaParaDeletar, setAreaParaDeletar] = useState<{ id: string, name: string } | null>(null);
+    const [areaParaDeletar, setAreaParaDeletar] = useState<{ id: string, nome: string } | null>(null);
 
     const buscarDados = useCallback(async () => {
         try {
@@ -44,8 +44,8 @@ const TelaAreas = () => {
         }
     };
 
-    const iniciarProcessoDeletar = (id: string, name: string) => {
-        setAreaParaDeletar({ id, name });
+    const iniciarProcessoDeletar = (id: string, nome: string) => {
+        setAreaParaDeletar({ id, nome });
         setModalDeletarVisivel(true);
     };
 
@@ -111,7 +111,7 @@ const TelaAreas = () => {
                  <ConfirmModal
                     visivel={modalDeletarVisivel}
                     titulo="Confirmar Exclusão"
-                    mensagem={`Tem a certeza que deseja deletar a área "${areaParaDeletar.name}"?`}
+                    mensagem={`Tem a certeza que deseja deletar a área "${areaParaDeletar.nome}"?`}
                     aoCancelar={cancelarDeletar}
                     aoConfirmar={confirmarDeletar}
                 />
@@ -125,13 +125,13 @@ export default function TelaPrincipal() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff' },
+    container: { flex: 1, backgroundColor: '#f0f4f8' },
     title: { fontSize: 28, fontWeight: 'bold', marginTop: 20, marginBottom: 16, textAlign: 'center' },
     inputContainer: { flexDirection: 'row', paddingHorizontal: 16, marginBottom: 16, gap: 8 },
     input: { flex: 1, borderWidth: 1, borderColor: '#ddd', padding: 10, borderRadius: 8, fontSize: 16 },
-    item: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f9f9f9', paddingVertical: 10, paddingHorizontal: 20, marginVertical: 8, marginHorizontal: 16, borderRadius: 8, borderWidth: 1, borderColor: '#eee' },
+    item: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', paddingVertical: 10, paddingHorizontal: 20, marginVertical: 8, marginHorizontal: 16, borderRadius: 8, elevation: 2 },
     linkArea: { flex: 1, paddingVertical: 10 },
-    itemText: { fontSize: 18 },
+    itemText: { fontSize: 18, fontWeight: '500' },
     deleteButtonContainer: { paddingVertical: 10, paddingLeft: 20 },
     deleteButton: { color: 'red', fontSize: 14 },
     errorText: { color: 'red', margin: 16, textAlign: 'center' }

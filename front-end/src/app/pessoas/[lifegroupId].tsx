@@ -1,32 +1,30 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, SafeAreaView, Button, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
-// Importações com nomes de funções em português
 import { buscarPessoasPorLifeGroup, criarPessoa, deletarPessoa, atualizarPessoa } from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 import PersonFormModal from '../../components/PersonFormModal';
 
-// Definindo a estrutura de dados de uma pessoa para o formulário
-interface DadosPessoa {
+// Interface para os dados do formulário (em português)
+interface DadosPessoaForm {
     id?: string;
-    name: string;
-    contact: string;
-    address: string;
-    birth_date: string;
+    nome: string;
+    contato: string;
+    endereco: string;
+    dataNascimento: string;
 }
 
 const TelaPessoas = () => {
     const { lifegroupId, lifegroupName } = useLocalSearchParams<{ lifegroupId: string, lifegroupName: string }>();
     
-    const [pessoas, setPessoas] = useState([]);
+    const [pessoas, setPessoas] = useState<any[]>([]);
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState<string | null>(null);
 
-    // Estados para os modais
     const [modalDeletarVisivel, setModalDeletarVisivel] = useState(false);
-    const [pessoaParaDeletar, setPessoaParaDeletar] = useState<{ id: string, name: string } | null>(null);
+    const [pessoaParaDeletar, setPessoaParaDeletar] = useState<{ id: string, nome: string } | null>(null);
     const [formModalVisivel, setFormModalVisivel] = useState(false);
-    const [pessoaParaEditar, setPessoaParaEditar] = useState<any>(null);
+    const [pessoaParaEditar, setPessoaParaEditar] = useState<any | null>(null);
 
     const buscarDados = useCallback(async () => {
         if (!lifegroupId) return;
@@ -56,18 +54,30 @@ const TelaPessoas = () => {
         setFormModalVisivel(true);
     };
 
-    const handleSubmeterFormulario = async (dadosPessoa: DadosPessoa) => {
+    const handleSubmeterFormulario = async (dadosForm: DadosPessoaForm) => {
+        console.log("Dados recebidos do formulário:", JSON.stringify(dadosForm, null, 2));
         try {
             if (pessoaParaEditar) { // Se está a editar
-                await atualizarPessoa(pessoaParaEditar.id, {
-                    name: dadosPessoa.name,
-                    contact: dadosPessoa.contact,
-                    address: dadosPessoa.address,
-                    birth_date: dadosPessoa.birth_date,
-                });
+                const dadosParaApi = {
+                    name: dadosForm.nome,
+                    contact: dadosForm.contato,
+                    address: dadosForm.endereco,
+                    birth_date: dadosForm.dataNascimento,
+                };
+                await atualizarPessoa(pessoaParaEditar.id, dadosParaApi);
             } else { // Se está a criar
-                const novaPessoa = { ...dadosPessoa, lifegroup: { id: lifegroupId } };
-                await criarPessoa(novaPessoa);
+                // CORREÇÃO: Enviamos TODOS os campos do formulário para a API
+                const dadosParaApi = { 
+                    name: dadosForm.nome,
+                    contact: dadosForm.contato,
+                    address: dadosForm.endereco,
+                    birth_date: dadosForm.dataNascimento,
+                    lifegroupId: lifegroupId 
+                };
+
+                console.log("Dados que serão enviados para a API:", JSON.stringify(dadosParaApi, null, 2));
+                
+                await criarPessoa(dadosParaApi);
             }
             setFormModalVisivel(false);
             buscarDados();
@@ -76,8 +86,8 @@ const TelaPessoas = () => {
         }
     };
     
-    const iniciarProcessoDeletar = (id: string, name: string) => {
-        setPessoaParaDeletar({ id, name });
+    const iniciarProcessoDeletar = (id: string, nome: string) => {
+        setPessoaParaDeletar({ id, nome });
         setModalDeletarVisivel(true);
     };
 
@@ -113,8 +123,8 @@ const TelaPessoas = () => {
 
             <FlatList
                 data={pessoas}
-                keyExtractor={(item: any) => item.id.toString()}
-                renderItem={({ item }: { item: any }) => (
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
                      <View style={styles.item}>
                         <View style={styles.linkArea}>
                             <Text style={styles.itemText}>{item.nome}</Text>
@@ -124,7 +134,7 @@ const TelaPessoas = () => {
                             <TouchableOpacity onPress={() => handleEditarPessoa(item)} style={styles.actionButton}>
                                 <Text style={styles.editButton}>Editar</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => iniciarProcessoDeletar(item.id, item.name)} style={styles.actionButton}>
+                            <TouchableOpacity onPress={() => iniciarProcessoDeletar(item.id, item.nome)} style={styles.actionButton}>
                                 <Text style={styles.deleteButton}>Deletar</Text>
                             </TouchableOpacity>
                         </View>
@@ -144,7 +154,7 @@ const TelaPessoas = () => {
                  <ConfirmModal
                     visivel={modalDeletarVisivel}
                     titulo="Confirmar Exclusão"
-                    mensagem={`Deseja deletar "${pessoaParaDeletar.name}"?`}
+                    mensagem={`Deseja deletar "${pessoaParaDeletar.nome}"?`}
                     aoCancelar={cancelarDeletar}
                     aoConfirmar={confirmarDeletar}
                 />
@@ -153,6 +163,7 @@ const TelaPessoas = () => {
     );
 };
 
+// ... (estilos permanecem os mesmos)
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f0f4f8' },
     title: { fontSize: 28, fontWeight: 'bold', marginTop: 20, marginBottom: 8, textAlign: 'center' },
@@ -166,5 +177,6 @@ const styles = StyleSheet.create({
     deleteButton: { color: 'red' },
     errorText: { color: 'red', margin: 16, textAlign: 'center' }
 });
+
 
 export default TelaPessoas;

@@ -1,8 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import {
-    View, Text, FlatList, StyleSheet, ActivityIndicator, SafeAreaView,
-    TextInput, Button, TouchableOpacity, Alert
-} from 'react-native';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, SafeAreaView, TextInput, Button, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, Stack, Link } from 'expo-router';
 import { buscarLifeGroupsPorSetor, criarLifeGroup, deletarLifeGroup } from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -16,14 +13,13 @@ const TelaLifeGroups = () => {
     const [novoNomeLifeGroup, setNovoNomeLifeGroup] = useState('');
 
     const [modalDeletarVisivel, setModalDeletarVisivel] = useState(false);
-    const [lifeGroupParaDeletar, setLifeGroupParaDeletar] = useState<{ id: string, name: string } | null>(null);
+    const [lifeGroupParaDeletar, setLifeGroupParaDeletar] = useState<{ id: string, nome: string } | null>(null);
 
     const buscarDados = useCallback(async () => {
         if (!sectorId) return;
         try {
             setCarregando(true);
             setErro(null);
-            // Chamada da função com nome em português
             const dados = await buscarLifeGroupsPorSetor(sectorId);
             setLifegroups(dados);
         } catch (err) {
@@ -40,10 +36,7 @@ const TelaLifeGroups = () => {
     const handleCriarLifeGroup = async () => {
         if (!novoNomeLifeGroup.trim() || !sectorId) return;
         try {
-            const dadosLifeGroup = { 
-                name: novoNomeLifeGroup, 
-                sectorId: sectorId 
-            };
+            const dadosLifeGroup = { name: novoNomeLifeGroup, sectorId: sectorId };
             await criarLifeGroup(dadosLifeGroup);
             setNovoNomeLifeGroup('');
             buscarDados();
@@ -52,15 +45,14 @@ const TelaLifeGroups = () => {
         }
     };
     
-    const iniciarProcessoDeletar = (id: string, name: string) => {
-        setLifeGroupParaDeletar({ id, name });
+    const iniciarProcessoDeletar = (id: string, nome: string) => {
+        setLifeGroupParaDeletar({ id, nome });
         setModalDeletarVisivel(true);
     };
 
     const confirmarDeletar = async () => {
         if (!lifeGroupParaDeletar) return;
         try {
-            // Chamada da função com nome em português
             await deletarLifeGroup(lifeGroupParaDeletar.id);
             buscarDados();
         } catch (err) {
@@ -75,10 +67,19 @@ const TelaLifeGroups = () => {
         setModalDeletarVisivel(false);
         setLifeGroupParaDeletar(null);
     };
-
-    if (!sectorId) {
-        return <Text>ID do Setor não fornecido.</Text>;
-    }
+    
+    const renderizarItem = ({ item }: { item: any }) => (
+        <View style={styles.item}>
+            <Link href={{ pathname: `/pessoas/${item.id}`, params: { lifegroupName: item.nome } } as any} asChild>
+                <TouchableOpacity style={styles.linkArea}>
+                    <Text style={styles.itemText}>{item.nome}</Text>
+                </TouchableOpacity>
+            </Link>
+            <TouchableOpacity onPress={() => iniciarProcessoDeletar(item.id, item.nome)} style={styles.deleteButtonContainer}>
+                <Text style={styles.deleteButton}>Deletar</Text>
+            </TouchableOpacity>
+        </View>
+    );
 
     return (
         <SafeAreaView style={styles.container}>
@@ -97,9 +98,7 @@ const TelaLifeGroups = () => {
                 <Button title="Adicionar" onPress={handleCriarLifeGroup} />
             </View>
 
-            {carregando ? (
-                <ActivityIndicator size="large" color="#007AFF" />
-            ) : erro ? (
+            {carregando ? <ActivityIndicator size="large" /> : erro ? (
                 <View style={{alignItems: 'center'}}>
                     <Text style={styles.errorText}>Erro: {erro}</Text>
                     <Button title="Tentar Novamente" onPress={buscarDados} />
@@ -108,30 +107,7 @@ const TelaLifeGroups = () => {
                 <FlatList
                     data={lifegroups}
                     keyExtractor={(item: any) => item.id.toString()}
-                    renderItem={({ item }: { item: any }) => (
-                         <Link 
-                            href={{ 
-                                pathname: `/pessoas/${item.id}`, 
-                                params: { lifegroupName: item.nome } 
-                            } as any}
-                            asChild
-                        >
-                            <TouchableOpacity style={styles.item}>
-                                <View style={styles.linkArea}>
-                                    <Text style={styles.itemText}>{item.nome}</Text>
-                                </View>
-                                <TouchableOpacity 
-                                    onPress={(e) => { 
-                                        e.preventDefault(); 
-                                        iniciarProcessoDeletar(item.id, item.nome); 
-                                    }}
-                                    style={styles.deleteButtonContainer}
-                                >
-                                    <Text style={styles.deleteButton}>Deletar</Text>
-                                </TouchableOpacity>
-                            </TouchableOpacity>
-                        </Link>
-                    )}
+                    renderItem={renderizarItem}
                     ListEmptyComponent={<Text style={{ textAlign: 'center' }}>Nenhum Lifegroup cadastrado para este setor.</Text>}
                 />
             )}
@@ -140,7 +116,7 @@ const TelaLifeGroups = () => {
                  <ConfirmModal
                     visivel={modalDeletarVisivel}
                     titulo="Confirmar Exclusão"
-                    mensagem={`Deseja deletar o Lifegroup "${lifeGroupParaDeletar.name}"?`}
+                    mensagem={`Deseja deletar o Lifegroup "${lifeGroupParaDeletar.nome}"?`}
                     aoCancelar={cancelarDeletar}
                     aoConfirmar={confirmarDeletar}
                 />
@@ -150,14 +126,14 @@ const TelaLifeGroups = () => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff' },
+    container: { flex: 1, backgroundColor: '#f0f4f8' },
     title: { fontSize: 28, fontWeight: 'bold', marginTop: 20, marginBottom: 8, textAlign: 'center' },
     subtitle: { fontSize: 16, color: 'gray', textAlign: 'center', marginBottom: 16 },
     inputContainer: { flexDirection: 'row', paddingHorizontal: 16, marginBottom: 16, gap: 8 },
     input: { flex: 1, borderWidth: 1, borderColor: '#ddd', padding: 10, borderRadius: 8, fontSize: 16 },
-    item: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f9f9f9', paddingVertical: 10, paddingHorizontal: 20, marginVertical: 8, marginHorizontal: 16, borderRadius: 8, borderWidth: 1, borderColor: '#eee' },
+    item: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', paddingVertical: 10, paddingHorizontal: 20, marginVertical: 8, marginHorizontal: 16, borderRadius: 8, elevation: 2 },
     linkArea: { flex: 1, paddingVertical: 10 },
-    itemText: { fontSize: 18 },
+    itemText: { fontSize: 18, fontWeight: '500' },
     deleteButtonContainer: { paddingVertical: 10, paddingLeft: 20 },
     deleteButton: { color: 'red', fontSize: 14 },
     errorText: { color: 'red', margin: 16, textAlign: 'center' }
