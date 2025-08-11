@@ -4,80 +4,76 @@ import {
     TextInput, Button, TouchableOpacity, Alert
 } from 'react-native';
 import { useLocalSearchParams, Stack, Link } from 'expo-router';
-import { getLifegroupsBySector, createLifegroup, deleteLifegroup } from '../../services/api';
+import { buscarLifeGroupsPorSetor, criarLifeGroup, deletarLifeGroup } from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 
-const LifegroupScreen = () => {
-    // Pega os parâmetros passados pela rota (neste caso, da tela de Setores)
+const TelaLifeGroups = () => {
     const { sectorId, sectorName } = useLocalSearchParams<{ sectorId: string, sectorName: string }>();
 
     const [lifegroups, setLifegroups] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [newLifegroupName, setNewLifegroupName] = useState('');
+    const [carregando, setCarregando] = useState(true);
+    const [erro, setErro] = useState<string | null>(null);
+    const [novoNomeLifeGroup, setNovoNomeLifeGroup] = useState('');
 
-    // Estados para controlar o modal de confirmação
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [lifegroupToDelete, setLifegroupToDelete] = useState<{ id: string, name: string } | null>(null);
+    const [modalDeletarVisivel, setModalDeletarVisivel] = useState(false);
+    const [lifeGroupParaDeletar, setLifeGroupParaDeletar] = useState<{ id: string, name: string } | null>(null);
 
-    // Função para buscar os lifegroups da API
-    const fetchLifegroups = useCallback(async () => {
+    const buscarDados = useCallback(async () => {
         if (!sectorId) return;
         try {
-            setIsLoading(true);
-            setError(null);
-            const data = await getLifegroupsBySector(sectorId);
-            setLifegroups(data);
+            setCarregando(true);
+            setErro(null);
+            // Chamada da função com nome em português
+            const dados = await buscarLifeGroupsPorSetor(sectorId);
+            setLifegroups(dados);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Ocorreu um erro desconhecido');
+            setErro(err instanceof Error ? err.message : 'Ocorreu um erro desconhecido');
         } finally {
-            setIsLoading(false);
+            setCarregando(false);
         }
     }, [sectorId]);
 
     useEffect(() => {
-        fetchLifegroups();
-    }, [fetchLifegroups]);
+        buscarDados();
+    }, [buscarDados]);
 
-    // Função para criar um novo lifegroup
-    const handleCreateLifegroup = async () => {
-        if (!newLifegroupName.trim() || !sectorId) {
-            Alert.alert('Erro', 'O nome do Lifegroup não pode ser vazio.');
-            return;
-        }
+    const handleCriarLifeGroup = async () => {
+        if (!novoNomeLifeGroup.trim() || !sectorId) return;
         try {
-            // O backend espera um objeto Sector completo, então enviamos o ID dentro de um objeto
-            const lifegroupData = { name: newLifegroupName, sector: { id: sectorId } };
-            await createLifegroup(lifegroupData);
-            setNewLifegroupName('');
-            fetchLifegroups(); // Recarrega a lista
+            const dadosLifeGroup = { 
+                name: novoNomeLifeGroup, 
+                sectorId: sectorId 
+            };
+            await criarLifeGroup(dadosLifeGroup);
+            setNovoNomeLifeGroup('');
+            buscarDados();
         } catch (err) {
-            Alert.alert('Erro', 'Não foi possível criar o Lifegroup.');
+            Alert.alert('Erro', 'Não foi possível criar o LifeGroup.');
         }
     };
     
-    // Funções para o processo de exclusão
-    const startDeleteProcess = (id: string, name: string) => {
-        setLifegroupToDelete({ id, name });
-        setIsModalVisible(true);
+    const iniciarProcessoDeletar = (id: string, name: string) => {
+        setLifeGroupParaDeletar({ id, name });
+        setModalDeletarVisivel(true);
     };
 
-    const confirmDelete = async () => {
-        if (!lifegroupToDelete) return;
+    const confirmarDeletar = async () => {
+        if (!lifeGroupParaDeletar) return;
         try {
-            await deleteLifegroup(lifegroupToDelete.id);
-            fetchLifegroups();
+            // Chamada da função com nome em português
+            await deletarLifeGroup(lifeGroupParaDeletar.id);
+            buscarDados();
         } catch (err) {
-            Alert.alert('Erro', 'Não foi possível deletar o Lifegroup.');
+            Alert.alert('Erro', 'Não foi possível deletar o LifeGroup.');
         } finally {
-            setIsModalVisible(false);
-            setLifegroupToDelete(null);
+            setModalDeletarVisivel(false);
+            setLifeGroupParaDeletar(null);
         }
     };
     
-    const cancelDelete = () => {
-        setIsModalVisible(false);
-        setLifegroupToDelete(null);
+    const cancelarDeletar = () => {
+        setModalDeletarVisivel(false);
+        setLifeGroupParaDeletar(null);
     };
 
     if (!sectorId) {
@@ -86,7 +82,6 @@ const LifegroupScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* Configura o título da página dinamicamente */}
             <Stack.Screen options={{ title: `Lifegroups de ${sectorName || 'Setor'}` }} />
             
             <Text style={styles.title}>Gerir Lifegroups</Text>
@@ -96,39 +91,39 @@ const LifegroupScreen = () => {
                 <TextInput
                     style={styles.input}
                     placeholder="Nome do novo Lifegroup"
-                    value={newLifegroupName}
-                    onChangeText={setNewLifegroupName}
+                    value={novoNomeLifeGroup}
+                    onChangeText={setNovoNomeLifeGroup}
                 />
-                <Button title="Adicionar" onPress={handleCreateLifegroup} />
+                <Button title="Adicionar" onPress={handleCriarLifeGroup} />
             </View>
 
-            {isLoading ? (
+            {carregando ? (
                 <ActivityIndicator size="large" color="#007AFF" />
-            ) : error ? (
+            ) : erro ? (
                 <View style={{alignItems: 'center'}}>
-                    <Text style={styles.errorText}>Erro: {error}</Text>
-                    <Button title="Tentar Novamente" onPress={fetchLifegroups} />
+                    <Text style={styles.errorText}>Erro: {erro}</Text>
+                    <Button title="Tentar Novamente" onPress={buscarDados} />
                 </View>
             ) : (
                 <FlatList
                     data={lifegroups}
                     keyExtractor={(item: any) => item.id.toString()}
                     renderItem={({ item }: { item: any }) => (
-                        <Link 
+                         <Link 
                             href={{ 
                                 pathname: `/pessoas/${item.id}`, 
-                                params: { lifegroupName: item.name } 
+                                params: { lifegroupName: item.nome } 
                             } as any}
                             asChild
                         >
                             <TouchableOpacity style={styles.item}>
                                 <View style={styles.linkArea}>
-                                    <Text style={styles.itemText}>{item.name}</Text>
+                                    <Text style={styles.itemText}>{item.nome}</Text>
                                 </View>
                                 <TouchableOpacity 
                                     onPress={(e) => { 
                                         e.preventDefault(); 
-                                        startDeleteProcess(item.id, item.name); 
+                                        iniciarProcessoDeletar(item.id, item.nome); 
                                     }}
                                     style={styles.deleteButtonContainer}
                                 >
@@ -141,13 +136,13 @@ const LifegroupScreen = () => {
                 />
             )}
 
-            {lifegroupToDelete && (
+            {lifeGroupParaDeletar && (
                  <ConfirmModal
-                    visible={isModalVisible}
-                    title="Confirmar Exclusão"
-                    message={`Deseja deletar o Lifegroup "${lifegroupToDelete.name}"?`}
-                    onCancel={cancelDelete}
-                    onConfirm={confirmDelete}
+                    visivel={modalDeletarVisivel}
+                    titulo="Confirmar Exclusão"
+                    mensagem={`Deseja deletar o Lifegroup "${lifeGroupParaDeletar.name}"?`}
+                    aoCancelar={cancelarDeletar}
+                    aoConfirmar={confirmarDeletar}
                 />
             )}
         </SafeAreaView>
@@ -168,4 +163,4 @@ const styles = StyleSheet.create({
     errorText: { color: 'red', margin: 16, textAlign: 'center' }
 });
 
-export default LifegroupScreen;
+export default TelaLifeGroups;

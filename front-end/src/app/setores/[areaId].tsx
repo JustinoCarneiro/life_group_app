@@ -1,73 +1,76 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, SafeAreaView, TextInput, Button, TouchableOpacity, Alert } from 'react-native';
-// A correção está na linha abaixo
 import { useLocalSearchParams, Stack, Link } from 'expo-router';
-import { getSectorsByArea, createSector, deleteSector } from '../../services/api';
+import { buscarSetoresPorArea, criarSetor, deletarSetor } from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 
-const SectorScreen = () => {
+const TelaSetores = () => {
     const { areaId, areaName } = useLocalSearchParams<{ areaId: string, areaName: string }>();
-    const [sectors, setSectors] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [newSectorName, setNewSectorName] = useState('');
+    const [setores, setSetores] = useState([]);
+    const [carregando, setCarregando] = useState(true);
+    const [erro, setErro] = useState<string | null>(null);
+    const [novoNomeSetor, setNovoNomeSetor] = useState('');
 
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [sectorToDelete, setSectorToDelete] = useState<{ id: string, name: string } | null>(null);
+    const [modalDeletarVisivel, setModalDeletarVisivel] = useState(false);
+    const [setorParaDeletar, setSetorParaDeletar] = useState<{ id: string, name: string } | null>(null);
 
-    const fetchSectors = useCallback(async () => {
+    const buscarDados = useCallback(async () => {
         if (!areaId) return;
         try {
-            setIsLoading(true);
-            setError(null);
-            const data = await getSectorsByArea(areaId);
-            setSectors(data);
+            setCarregando(true);
+            setErro(null);
+            // Chamada da função traduzida
+            const dados = await buscarSetoresPorArea(areaId);
+            setSetores(dados);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Ocorreu um erro desconhecido');
+            setErro(err instanceof Error ? err.message : 'Ocorreu um erro desconhecido');
         } finally {
-            setIsLoading(false);
+            setCarregando(false);
         }
     }, [areaId]);
 
     useEffect(() => {
-        fetchSectors();
-    }, [fetchSectors]);
+        buscarDados();
+    }, [buscarDados]);
 
-    const handleCreateSector = async () => {
-        if (!newSectorName.trim() || !areaId) return;
+    const handleCriarSetor = async () => {
+        if (!novoNomeSetor.trim() || !areaId) return;
         try {
-            const sectorData = { name: newSectorName, area: { id: areaId } };
-            await createSector(sectorData);
-            setNewSectorName('');
-            fetchSectors();
+            const dadosSetor = { 
+                name: novoNomeSetor, 
+                areaId: areaId 
+            };
+            await criarSetor(dadosSetor);
+            setNovoNomeSetor('');
+            buscarDados();
         } catch (err) {
             Alert.alert('Erro', 'Não foi possível criar o setor.');
         }
     };
     
-    const startDeleteProcess = (id: string, name: string) => {
-        setSectorToDelete({ id, name });
-        setIsModalVisible(true);
+    const iniciarProcessoDeletar = (id: string, name: string) => {
+        setSetorParaDeletar({ id, name });
+        setModalDeletarVisivel(true);
     };
 
-    const confirmDelete = async () => {
-        if (!sectorToDelete) return;
+    const confirmarDeletar = async () => {
+        if (!setorParaDeletar) return;
         try {
-            await deleteSector(sectorToDelete.id);
-            fetchSectors();
+            // Chamada da função traduzida
+            await deletarSetor(setorParaDeletar.id);
+            buscarDados();
         } catch (err) {
             Alert.alert('Erro', 'Não foi possível deletar o setor.');
         } finally {
-            setIsModalVisible(false);
-            setSectorToDelete(null);
+            setModalDeletarVisivel(false);
+            setSetorParaDeletar(null);
         }
     };
     
-    const cancelDelete = () => {
-        setIsModalVisible(false);
-        setSectorToDelete(null);
+    const cancelarDeletar = () => {
+        setModalDeletarVisivel(false);
+        setSetorParaDeletar(null);
     };
-
 
     if (!areaId) {
         return <Text>ID da Área não fornecido.</Text>;
@@ -83,37 +86,37 @@ const SectorScreen = () => {
                 <TextInput
                     style={styles.input}
                     placeholder="Nome do novo setor"
-                    value={newSectorName}
-                    onChangeText={setNewSectorName}
+                    value={novoNomeSetor}
+                    onChangeText={setNovoNomeSetor}
                 />
-                <Button title="Adicionar" onPress={handleCreateSector} />
+                <Button title="Adicionar" onPress={handleCriarSetor} />
             </View>
 
-            {isLoading ? (
+            {carregando ? (
                 <ActivityIndicator size="large" color="#007AFF" />
-            ) : error ? (
+            ) : erro ? (
                 <View style={{alignItems: 'center'}}>
-                    <Text style={styles.errorText}>Erro: {error}</Text>
-                    <Button title="Tentar Novamente" onPress={fetchSectors} />
+                    <Text style={styles.errorText}>Erro: {erro}</Text>
+                    <Button title="Tentar Novamente" onPress={buscarDados} />
                 </View>
             ) : (
                 <FlatList
-                    data={sectors}
+                    data={setores}
                     keyExtractor={(item: any) => item.id.toString()}
                     renderItem={({ item }: { item: any }) => (
                         <Link 
                             href={{ 
                                 pathname: `/lifegroups/${item.id}`, 
-                                params: { sectorName: item.name } 
+                                params: { sectorName: item.nome } 
                             } as any} 
                             asChild
                         >
                             <TouchableOpacity style={styles.item}>
-                                <Text style={styles.itemText}>{item.name}</Text>
+                                <Text style={styles.itemText}>{item.nome}</Text>
                                 <TouchableOpacity 
-                                    onPress={(e) => { 
+                                    onPress={(e) => {
                                         e.preventDefault(); 
-                                        startDeleteProcess(item.id, item.name); 
+                                        iniciarProcessoDeletar(item.id, item.nome); 
                                     }}
                                 >
                                     <Text style={styles.deleteButton}>Deletar</Text>
@@ -125,13 +128,13 @@ const SectorScreen = () => {
                 />
             )}
 
-            {sectorToDelete && (
+            {setorParaDeletar && (
                  <ConfirmModal
-                    visible={isModalVisible}
-                    title="Confirmar Exclusão"
-                    message={`Deseja deletar o setor "${sectorToDelete.name}"?`}
-                    onCancel={cancelDelete}
-                    onConfirm={confirmDelete}
+                    visivel={modalDeletarVisivel}
+                    titulo="Confirmar Exclusão"
+                    mensagem={`Deseja deletar o setor "${setorParaDeletar.name}"?`}
+                    aoCancelar={cancelarDeletar}
+                    aoConfirmar={confirmarDeletar}
                 />
             )}
         </SafeAreaView>
@@ -150,4 +153,4 @@ const styles = StyleSheet.create({
     errorText: { color: 'red', margin: 16, textAlign: 'center' }
 });
 
-export default SectorScreen;
+export default TelaSetores;

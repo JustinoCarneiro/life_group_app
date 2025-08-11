@@ -1,202 +1,138 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import {
-    View, Text, FlatList, StyleSheet, ActivityIndicator, SafeAreaView,
-    TextInput, Button, TouchableOpacity
-} from 'react-native';
-import { getAreas, createArea, deleteArea } from '../../src/services/api';
-import ConfirmModal from '../components/ConfirmModal';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, SafeAreaView, TextInput, Button, TouchableOpacity, Alert } from 'react-native';
 import { Link } from 'expo-router';
+import { buscarAreas, criarArea, deletarArea } from '../../src/services/api';
+import ConfirmModal from '../components/ConfirmModal';
 
-const AreaScreen = () => {
+const TelaAreas = () => {
     const [areas, setAreas] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [newAreaName, setNewAreaName] = useState('');
+    const [carregando, setCarregando] = useState(true);
+    const [erro, setErro] = useState<string | null>(null);
+    const [novoNomeArea, setNovoNomeArea] = useState('');
 
-    // 2. Estados para controlar o modal
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [areaToDelete, setAreaToDelete] = useState<{ id: string, name: string } | null>(null);
+    const [modalDeletarVisivel, setModalDeletarVisivel] = useState(false);
+    const [areaParaDeletar, setAreaParaDeletar] = useState<{ id: string, name: string } | null>(null);
 
-    const fetchAreas = useCallback(async () => {
-        // ... (esta função continua a mesma)
+    const buscarDados = useCallback(async () => {
         try {
-            setIsLoading(true);
-            setError(null);
-            const data = await getAreas();
-            setAreas(data);
+            setCarregando(true);
+            setErro(null);
+            const dados = await buscarAreas();
+            setAreas(dados);
         } catch (err) {
-            if (err instanceof Error) {
-                setError(err.message);
-            } else {
-                setError('Ocorreu um erro desconhecido');
-            }
+            setErro(err instanceof Error ? err.message : 'Ocorreu um erro desconhecido');
         } finally {
-            setIsLoading(false);
+            setCarregando(false);
         }
     }, []);
 
     useEffect(() => {
-        fetchAreas();
-    }, [fetchAreas]);
+        buscarDados();
+    }, [buscarDados]);
 
-    const handleCreateArea = async () => {
-        // ... (esta função continua a mesma)
-        if (!newAreaName.trim()) {
-            alert('O nome da área não pode ser vazio.'); // Alert simples para web funciona bem
+    const handleCriarArea = async () => {
+        if (!novoNomeArea.trim()) {
+            Alert.alert('Erro', 'O nome da área não pode ser vazio.');
             return;
         }
         try {
-            await createArea({ name: newAreaName });
-            setNewAreaName('');
-            fetchAreas();
+            await criarArea({ name: novoNomeArea });
+            setNovoNomeArea('');
+            buscarDados();
         } catch (err) {
-            alert('Não foi possível criar a área.');
+            Alert.alert('Erro', 'Não foi possível criar a área.');
         }
     };
 
-    // 3. Função para INICIAR a exclusão (apenas abre o modal)
-    const startDeleteProcess = (id: string, name: string) => {
-        setAreaToDelete({ id, name });
-        setIsModalVisible(true);
+    const iniciarProcessoDeletar = (id: string, name: string) => {
+        setAreaParaDeletar({ id, name });
+        setModalDeletarVisivel(true);
     };
 
-    // 4. Função para CONFIRMAR a exclusão (chamada pelo modal)
-    const confirmDelete = async () => {
-        if (!areaToDelete) return;
+    const confirmarDeletar = async () => {
+        if (!areaParaDeletar) return;
         try {
-            await deleteArea(areaToDelete.id);
-            fetchAreas();
+            await deletarArea(areaParaDeletar.id);
+            buscarDados();
         } catch (err) {
-            alert('Não foi possível deletar a área.');
+            Alert.alert('Erro', 'Não foi possível deletar a área.');
         } finally {
-            setIsModalVisible(false);
-            setAreaToDelete(null);
+            setModalDeletarVisivel(false);
+            setAreaParaDeletar(null);
         }
     };
 
-    // 5. Função para CANCELAR a exclusão
-    const cancelDelete = () => {
-        setIsModalVisible(false);
-        setAreaToDelete(null);
+    const cancelarDeletar = () => {
+        setModalDeletarVisivel(false);
+        setAreaParaDeletar(null);
     };
 
-
-    const renderContent = () => {
-        if (isLoading) {
-            return (
-                <View style={styles.centered}>
-                    <ActivityIndicator size="large" color="#007AFF" />
-                    <Text>Carregando Áreas...</Text>
-                </View>
-            );
-        }
-
-        if (error) {
-            return (
-                <View style={styles.centered}>
-                    <Text style={styles.errorText}>Erro: {error}</Text>
-                    <Button title="Tentar Novamente" onPress={fetchAreas} />
-                </View>
-            );
-        }
-
-        return (
-            <FlatList
-                data={areas}
-                keyExtractor={(item: any) => item.id.toString()}
-                renderItem={({ item }: { item: any }) => (
-                    <View style={styles.item}>
-                        <Link 
-                            href={{ 
-                                pathname: `/setores/${item.id}`, 
-                                params: { areaName: item.name } 
-                            } as any}
-                            asChild
-                        >
-                            <TouchableOpacity style={styles.linkArea}>
-                                <Text style={styles.itemText}>{item.name}</Text>
-                            </TouchableOpacity>
-                        </Link>
-
-                        <TouchableOpacity 
-                            onPress={() => startDeleteProcess(item.id, item.name)}
-                            style={styles.deleteButtonContainer}
-                        >
-                            <Text style={styles.deleteButton}>Deletar</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
-                ListEmptyComponent={<Text style={{ textAlign: 'center' }}>Nenhuma área cadastrada.</Text>}
-            />
-        );
-    };
+    const renderizarItem = ({ item }: { item: any }) => (
+        <View style={styles.item}>
+            <Link href={{ pathname: `/setores/${item.id}`, params: { areaName: item.nome } } as any} asChild>
+                <TouchableOpacity style={styles.linkArea}>
+                    <Text style={styles.itemText}>{item.nome}</Text>
+                </TouchableOpacity>
+            </Link>
+            <TouchableOpacity onPress={() => iniciarProcessoDeletar(item.id, item.nome)} style={styles.deleteButtonContainer}>
+                <Text style={styles.deleteButton}>Deletar</Text>
+            </TouchableOpacity>
+        </View>
+    );
 
     return (
         <SafeAreaView style={styles.container}>
-            <Text style={styles.title}>Gerenciar Áreas</Text>
+            <Text style={styles.title}>Gerir Áreas</Text>
             <View style={styles.inputContainer}>
                 <TextInput
                     style={styles.input}
                     placeholder="Nome da nova área"
-                    value={newAreaName}
-                    onChangeText={setNewAreaName}
+                    value={novoNomeArea}
+                    onChangeText={setNovoNomeArea}
                 />
-                <Button title="Adicionar" onPress={handleCreateArea} />
+                <Button title="Adicionar" onPress={handleCriarArea} />
             </View>
             
-            {renderContent()}
-
-            {/* 7. Renderize o modal aqui */}
-            {areaToDelete && (
+            {carregando ? <ActivityIndicator size="large" /> : erro ? (
+                <View style={{alignItems: 'center'}}>
+                    <Text style={styles.errorText}>Erro: {erro}</Text>
+                    <Button title="Tentar Novamente" onPress={buscarDados} />
+                </View>
+            ) : (
+                <FlatList
+                    data={areas}
+                    keyExtractor={(item: any) => item.id.toString()}
+                    renderItem={renderizarItem}
+                    ListEmptyComponent={<Text style={{ textAlign: 'center' }}>Nenhuma área cadastrada.</Text>}
+                />
+            )}
+            
+            {areaParaDeletar && (
                  <ConfirmModal
-                    visible={isModalVisible}
-                    title="Confirmar Exclusão"
-                    message={`Você tem certeza que deseja deletar a área "${areaToDelete.name}"?`}
-                    onCancel={cancelDelete}
-                    onConfirm={confirmDelete}
+                    visivel={modalDeletarVisivel}
+                    titulo="Confirmar Exclusão"
+                    mensagem={`Tem a certeza que deseja deletar a área "${areaParaDeletar.name}"?`}
+                    aoCancelar={cancelarDeletar}
+                    aoConfirmar={confirmarDeletar}
                 />
             )}
         </SafeAreaView>
     );
 };
 
-export default function HomeScreen() {
-    return <AreaScreen />;
+export default function TelaPrincipal() {
+    return <TelaAreas />;
 }
 
-// Os estilos (styles) continuam os mesmos
-// Os estilos (styles) continuam os mesmos, apenas adicione estes novos
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#fff' },
-    centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     title: { fontSize: 28, fontWeight: 'bold', marginTop: 20, marginBottom: 16, textAlign: 'center' },
     inputContainer: { flexDirection: 'row', paddingHorizontal: 16, marginBottom: 16, gap: 8 },
     input: { flex: 1, borderWidth: 1, borderColor: '#ddd', padding: 10, borderRadius: 8, fontSize: 16 },
-    // Estilo do item principal modificado
-    item: { 
-        flexDirection: 'row', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        backgroundColor: '#f9f9f9', 
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        marginVertical: 8, 
-        marginHorizontal: 16, 
-        borderRadius: 8, 
-        borderWidth: 1, 
-        borderColor: '#eee' 
-    },
-    // Novo estilo para a área clicável do link
-    linkArea: {
-        flex: 1,
-        paddingVertical: 10, // Garante que a área de toque seja grande
-    },
+    item: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f9f9f9', paddingVertical: 10, paddingHorizontal: 20, marginVertical: 8, marginHorizontal: 16, borderRadius: 8, borderWidth: 1, borderColor: '#eee' },
+    linkArea: { flex: 1, paddingVertical: 10 },
     itemText: { fontSize: 18 },
-    // Novo estilo para o container do botão de apagar
-    deleteButtonContainer: {
-        paddingVertical: 10,
-        paddingLeft: 20, // Aumenta a área de toque
-    },
+    deleteButtonContainer: { paddingVertical: 10, paddingLeft: 20 },
     deleteButton: { color: 'red', fontSize: 14 },
     errorText: { color: 'red', margin: 16, textAlign: 'center' }
 });

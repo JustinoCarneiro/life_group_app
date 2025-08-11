@@ -5,8 +5,8 @@ import java.time.LocalDate;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode; // 1. Adicione este import
-import org.hibernate.type.SqlTypes;           // 2. Adicione este import
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "people")
@@ -18,26 +18,33 @@ public class Pessoa {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(nullable = false)
-    private String name;
+    @Column(name = "name", nullable = false)
+    private String nome;
 
-    private String contact;
-    private String address;
-    private LocalDate birth_date;
+    @Column(name = "contact")
+    private String contato;
+
+    @Column(name = "address")
+    private String endereco;
+
+    @Column(name = "birth_date")
+    private LocalDate dataNascimento;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lifegroup_id")
-    private LifeGroup lifegroup;
+    private LifeGroup lifeGroup; // Corrigido para 'lifeGroup' para manter o padrão
 
-    private boolean is_leader;
-    private boolean is_assistant;
+    @Column(name = "is_leader")
+    private boolean ehLider;
+
+    @Column(name = "is_assistant")
+    private boolean ehAuxiliar;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "discipler_id")
-    private Pessoa discipler;
+    private Pessoa discipulador;
     
-    // 3. Adicione esta anotação para mapear para o tipo JSONB
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private String steps;
+    @Column(name = "steps", columnDefinition = "jsonb")
+    private String passos;
 }
