@@ -6,7 +6,7 @@ import ConfirmModal from '../../components/ConfirmModal';
 
 const TelaSetores = () => {
     const { areaId, areaName } = useLocalSearchParams<{ areaId: string, areaName: string }>();
-    const [setores, setSetores] = useState([]);
+    const [setores, setSetores] = useState<any[]>([]);
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState<string | null>(null);
     const [novoNomeSetor, setNovoNomeSetor] = useState('');
@@ -35,7 +35,7 @@ const TelaSetores = () => {
     const handleCriarSetor = async () => {
         if (!novoNomeSetor.trim() || !areaId) return;
         try {
-            const dadosSetor = { name: novoNomeSetor, areaId: areaId };
+            const dadosSetor = { nome: novoNomeSetor, areaId: areaId };
             await criarSetor(dadosSetor);
             setNovoNomeSetor('');
             buscarDados();
@@ -123,6 +123,7 @@ const TelaSetores = () => {
     );
 };
 
+// ... (Estilos permanecem os mesmos)
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f0f4f8' },
     title: { fontSize: 28, fontWeight: 'bold', marginTop: 20, marginBottom: 8, textAlign: 'center' },
@@ -136,5 +137,6 @@ const styles = StyleSheet.create({
     deleteButton: { color: 'red', fontSize: 14 },
     errorText: { color: 'red', margin: 16, textAlign: 'center' }
 });
+
 
 export default TelaSetores;

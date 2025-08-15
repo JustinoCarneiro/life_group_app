@@ -5,7 +5,7 @@ import { buscarAreas, criarArea, deletarArea } from '../../services/api';
 import ConfirmModal from '../../components/ConfirmModal';
 
 const TelaAreas = () => {
-    const [areas, setAreas] = useState([]);
+    const [areas, setAreas] = useState<any[]>([]);
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState<string | null>(null);
     const [novoNomeArea, setNovoNomeArea] = useState('');
@@ -36,7 +36,8 @@ const TelaAreas = () => {
             return;
         }
         try {
-            await criarArea({ name: novoNomeArea });
+            // Enviamos o objeto com a chave 'nome' (português)
+            await criarArea({ nome: novoNomeArea });
             setNovoNomeArea('');
             buscarDados();
         } catch (err) {
@@ -101,7 +102,7 @@ const TelaAreas = () => {
             ) : (
                 <FlatList
                     data={areas}
-                    keyExtractor={(item: any) => item.id.toString()}
+                    keyExtractor={(item) => item.id.toString()}
                     renderItem={renderizarItem}
                     ListEmptyComponent={<Text style={{ textAlign: 'center' }}>Nenhuma área cadastrada.</Text>}
                 />
@@ -120,10 +121,7 @@ const TelaAreas = () => {
     );
 };
 
-export default function TelaPrincipal() {
-    return <TelaAreas />;
-}
-
+// ... (Estilos permanecem os mesmos)
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f0f4f8' },
     title: { fontSize: 28, fontWeight: 'bold', marginTop: 20, marginBottom: 16, textAlign: 'center' },
@@ -136,3 +134,6 @@ const styles = StyleSheet.create({
     deleteButton: { color: 'red', fontSize: 14 },
     errorText: { color: 'red', margin: 16, textAlign: 'center' }
 });
+
+
+export default TelaAreas;
