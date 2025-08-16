@@ -5,7 +5,6 @@ import { buscarPessoasPorLifeGroup, criarPessoa, deletarPessoa, atualizarPessoa 
 import ConfirmModal from '../../components/ConfirmModal';
 import PersonFormModal from '../../components/PersonFormModal';
 
-// Interface para os dados do formulário (em português)
 interface DadosPessoaForm {
     id?: string;
     nome: string;
@@ -55,29 +54,12 @@ const TelaPessoas = () => {
     };
 
     const handleSubmeterFormulario = async (dadosForm: DadosPessoaForm) => {
-        console.log("Dados recebidos do formulário:", JSON.stringify(dadosForm, null, 2));
         try {
-            if (pessoaParaEditar) { // Se está a editar
-                const dadosParaApi = {
-                    name: dadosForm.nome,
-                    contact: dadosForm.contato,
-                    address: dadosForm.endereco,
-                    birth_date: dadosForm.dataNascimento,
-                };
-                await atualizarPessoa(pessoaParaEditar.id, dadosParaApi);
-            } else { // Se está a criar
-                // CORREÇÃO: Enviamos TODOS os campos do formulário para a API
-                const dadosParaApi = { 
-                    name: dadosForm.nome,
-                    contact: dadosForm.contato,
-                    address: dadosForm.endereco,
-                    birth_date: dadosForm.dataNascimento,
-                    lifegroupId: lifegroupId 
-                };
-
-                console.log("Dados que serão enviados para a API:", JSON.stringify(dadosParaApi, null, 2));
-                
-                await criarPessoa(dadosParaApi);
+            if (pessoaParaEditar) {
+                await atualizarPessoa(pessoaParaEditar.id, dadosForm);
+            } else {
+                const novaPessoa = { ...dadosForm, idLifeGroup: lifegroupId };
+                await criarPessoa(novaPessoa);
             }
             setFormModalVisivel(false);
             buscarDados();
@@ -163,7 +145,7 @@ const TelaPessoas = () => {
     );
 };
 
-// ... (estilos permanecem os mesmos)
+// ... (Estilos permanecem os mesmos)
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f0f4f8' },
     title: { fontSize: 28, fontWeight: 'bold', marginTop: 20, marginBottom: 8, textAlign: 'center' },
@@ -177,6 +159,5 @@ const styles = StyleSheet.create({
     deleteButton: { color: 'red' },
     errorText: { color: 'red', margin: 16, textAlign: 'center' }
 });
-
 
 export default TelaPessoas;

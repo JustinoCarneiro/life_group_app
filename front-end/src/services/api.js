@@ -106,12 +106,11 @@ export const atualizarPessoa = async (idPessoa, dadosPessoa) => {
     const resposta = await fetch(`${API_URL}/api/pessoas/${idPessoa}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        // Enviamos os campos em inglês, como esperado pelo DTO de atualização
         body: JSON.stringify({
-            name: dadosPessoa.name,
-            contact: dadosPessoa.contact,
-            address: dadosPessoa.address,
-            birth_date: dadosPessoa.birth_date,
+            name: dadosPessoa.nome,
+            contact: dadosPessoa.contato,
+            address: dadosPessoa.endereco,
+            birth_date: dadosPessoa.dataNascimento,
         }),
     });
     if (!resposta.ok) throw new Error('Falha ao atualizar pessoa');

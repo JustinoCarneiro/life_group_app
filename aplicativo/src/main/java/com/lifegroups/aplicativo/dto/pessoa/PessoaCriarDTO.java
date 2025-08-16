@@ -1,24 +1,14 @@
 package com.lifegroups.aplicativo.dto.pessoa;
 
-import com.fasterxml.jackson.annotation.JsonFormat; // 1. Adicione este import
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.UUID;
 
 public record PessoaCriarDTO(
-    @JsonProperty("name") 
-    String nome, 
-    
-    @JsonProperty("contact")
+    String nome,
     String contato,
-
-    @JsonProperty("address")
     String endereco,
-
-    @JsonProperty("birth_date")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy") // 2. Adicione esta anotação
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     LocalDate dataNascimento,
-    
-    @JsonProperty("lifegroupId")
     UUID idLifeGroup
 ) {}

@@ -11,6 +11,7 @@ const TelaAreas = () => {
     const [novoNomeArea, setNovoNomeArea] = useState('');
 
     const [modalDeletarVisivel, setModalDeletarVisivel] = useState(false);
+    // CORREÇÃO: O estado agora espera a propriedade 'nome'
     const [areaParaDeletar, setAreaParaDeletar] = useState<{ id: string, nome: string } | null>(null);
 
     const buscarDados = useCallback(async () => {
@@ -36,7 +37,6 @@ const TelaAreas = () => {
             return;
         }
         try {
-            // Enviamos o objeto com a chave 'nome' (português)
             await criarArea({ nome: novoNomeArea });
             setNovoNomeArea('');
             buscarDados();
@@ -112,6 +112,7 @@ const TelaAreas = () => {
                  <ConfirmModal
                     visivel={modalDeletarVisivel}
                     titulo="Confirmar Exclusão"
+                    // CORREÇÃO: A mensagem usa a propriedade 'nome'
                     mensagem={`Tem a certeza que deseja deletar a área "${areaParaDeletar.nome}"?`}
                     aoCancelar={cancelarDeletar}
                     aoConfirmar={confirmarDeletar}
@@ -121,7 +122,10 @@ const TelaAreas = () => {
     );
 };
 
-// ... (Estilos permanecem os mesmos)
+export default function TelaPrincipal() {
+    return <TelaAreas />;
+}
+
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f0f4f8' },
     title: { fontSize: 28, fontWeight: 'bold', marginTop: 20, marginBottom: 16, textAlign: 'center' },
@@ -134,6 +138,3 @@ const styles = StyleSheet.create({
     deleteButton: { color: 'red', fontSize: 14 },
     errorText: { color: 'red', margin: 16, textAlign: 'center' }
 });
-
-
-export default TelaAreas;

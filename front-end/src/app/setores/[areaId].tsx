@@ -104,7 +104,7 @@ const TelaSetores = () => {
             ) : (
                 <FlatList
                     data={setores}
-                    keyExtractor={(item: any) => item.id.toString()}
+                    keyExtractor={(item) => item.id.toString()}
                     renderItem={renderizarItem}
                     ListEmptyComponent={<Text style={{ textAlign: 'center' }}>Nenhum setor cadastrado para esta área.</Text>}
                 />
@@ -137,6 +137,5 @@ const styles = StyleSheet.create({
     deleteButton: { color: 'red', fontSize: 14 },
     errorText: { color: 'red', margin: 16, textAlign: 'center' }
 });
-
 
 export default TelaSetores;

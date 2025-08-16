@@ -140,5 +140,4 @@ const styles = StyleSheet.create({
     errorText: { color: 'red', margin: 16, textAlign: 'center' }
 });
 
-
 export default TelaLifeGroups;
